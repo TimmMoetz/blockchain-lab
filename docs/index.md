@@ -6,10 +6,10 @@ In dieser Dokumentation werden die wichtigsten Punkte, wie Konzept oder verwende
 
 #### 1.1 Speicherung der Blöcke
 
-- Jeder Node speichert unabhängig die gesamte Blockchain mit den bereits validierten\
+- Jeder Node speichert unabhängig die gesamte Blockchain mit den bereits validierten Blöcken\
   -> Shared Nothing (Eigener CPU, RAM und Festplatte)
 - Ein Block wird durch eine JSON-Datei abgebildet und gespeichert
-- Der Dateiname besteht aus dem Hash des Blocks. Im Dateikörper werden die Nummer, die Zeit der Erstellung,\
+- Der Dateiname besteht aus dem Index des Blocks (blk00001). Im Dateikörper werden der Hash, die Zeit der Erstellung,\
   Transaktionsdaten des Blocks, sowie der Hash des vorhergehenden Blocks festgehalten
 
 
