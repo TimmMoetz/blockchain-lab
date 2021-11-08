@@ -1,12 +1,20 @@
-## Welcome to GitHub Pages
+## Dokumentation Blockchain Projekt
 
-You can use the [editor on GitHub](https://github.com/TimmMoetz/blockchain-lab/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+In dieser Dokumentation werden die wichtigsten Punkte, wie Konzept oder verwendete Technologien erläutert.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+### 1. Konzept
 
-### Markdown
+#### 1.1 Speicherung der Blöcke
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+- Jeder Node speichert unabhängig die gesamte Blockchain mit den bereits validierten\
+  -> Shared Nothing (Eigener CPU, RAM und Festplatte)
+- Ein Block wird durch eine JSON-Datei abgebildet und gespeichert
+- Der Dateiname besteht aus dem Hash des Blocks. Im Dateikörper werden die Nummer, die Zeit der Erstellung,\
+  Transaktionsdaten des Blocks, sowie der Hash des vorhergehenden Blocks festgehalten
+
+
+
+------------------------------------------------------
 
 ```markdown
 Syntax highlighted code block
