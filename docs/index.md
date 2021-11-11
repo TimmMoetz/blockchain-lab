@@ -65,7 +65,7 @@ payload der nachrichten
 
 IBD wird ausgeführt wenn ein Node das erste mal gestartet wird und keine Blockchain vorhanden ist und anschließend in einem bestimmten Zeitintervall wiederholt, damit die Blockchain aktuell bleibt.
 
-<img src="https://github.com/TimmMoetz/blockchain-lab/blob/gh-pages/docs/assets/blocks-first-flowchart.svg" alt="hi" class="inline"/>
+![Image](blockchain-lab/docs/assets/blocks-first-flowchart.svg)
 
 <img src="https://github.com/TimmMoetz/blockchain-lab/blob/gh-pages/docs/assets/IBD.svg" alt="hi" class="inline"/>
 
