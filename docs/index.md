@@ -77,14 +77,3 @@ Wenn ein Node neuen Block generiert (mining), schickt er eine inv-Nachricht (pay
 ###### Longest Chain
 
 Die längste Chain ist die Chain mit den meisten Blöcken (so wie in Bitcoins erster version. Aktuell wird das anhand der benötigten energy zum minen der Cahin bestimmt, aber das ist zu sprengt unseren ramen und ist auch nicht relevant, weil wir auch keine difficulty verändern werden)
-
-
-
-#### Noch offene Fragen / ToDos
-
-version - verack weglassen oder abkürzen(3way)?
-ping - pong weglassen?
-
-library? In bezug auf p2p findet man am meisten zu twisted und socket
-
-Erstellung einer Reihe von Nodes um ein größeres Netzwerk zu simulieren 
