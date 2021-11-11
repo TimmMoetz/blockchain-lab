@@ -52,14 +52,6 @@ Die einzelnen Aufgaben und der Arbeitsfortschrit werden in Github-Projects verwa
 
 im folgenden werden diese Nachrichten sowie deren Zweck, Inhalt und Ablauf genauer beschrieben:
 
-##### Verbindungsaufbau:
-
-
-
-sequenzdiagramm
-payload der nachrichten
-
-(Zweck, Inhalt und Ablauf)
 
 ##### Initial Block Download (IBD)
 
@@ -69,16 +61,20 @@ IBD wird ausgeführt wenn ein Node das erste mal gestartet wird und keine Blockc
 
 <img src="https://github.com/TimmMoetz/blockchain-lab/blob/gh-pages/docs/assets/IBD.svg" alt="hi" class="inline"/>
 
-Payload von getblocks: hash des obersten Blocks in der Blockchain des Nodes (oder wie in bitcoin auch mehrere?)
+Payload von getblocks: hash des obersten Blocks in der Blockchain des Nodes 
 
-Payload von inv: Liste von hashes aller Blöcke in der Blockchain des Nodes, ab dem Block mikt dem Hash aus der getblocks-Nachricht 
+Payload von inv: Liste von hashes aller Blöcke in der Blockchain des Nodes, ab dem Block mit dem Hash aus der getblocks-Nachricht 
+
+Payload von getdata: sie selbe Liste wie in inv
+
+Payload von block: ein block im JSON-Format
+
 
 
 Wenn ein Node neuen Block generiert (mining), schickt er eine inv-Nachricht (payload: hash des neuen Blocks) an seine Peers. Diese können dann den neuen block mit getdata anfordern.
 
 
-(Zweck, Inhalt und Ablauf)
-
+###### Longest Chain
 
 Die längste Chain ist die Chain mit den meisten Blöcken (so wie in Bitcoins erster version. Aktuell wird das anhand der benötigten energy zum minen der Cahin bestimmt, aber das ist zu sprengt unseren ramen und ist auch nicht relevant, weil wir auch keine difficulty verändern werden)
 
@@ -91,10 +87,4 @@ ping - pong weglassen?
 
 library? In bezug auf p2p findet man am meisten zu twisted und socket
 
-- protkoll? etc pub/sub, req/res, push/ pull?
-
-
-
-- (auserdem wird es einen server geben der ip adressen zurückgibt)?
-- Netzwerk Topologie: ? (neighbour selection)
-
+Erstellung einer Reihe von Nodes um ein größeres Netzwerk zu simulieren 
