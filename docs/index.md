@@ -2,9 +2,17 @@
 
 In dieser Dokumentation werden die wichtigsten Punkte, wie Konzept oder verwendete Technologien erläutert.
 
-### 1. Konzept
+### 1. Vorgehensweise
 
-#### 1.1 Speicherung der Blöcke
+Die Arbeit wird zwischen den Teammitgliedern Jan und Timm folgendermaßen aufgeteilt:
+- Timm fokussiert sich auf die Konzeption und Umsetzung des Peer-to-Peer-Netzwerkes. Dazu gehört fürs erste beispielsweise die Entwicklung eines p2p-clients (der ebenso Server-Eigenschaften besitzt), der sich mit anderen Clients/Nodes verbinden kann und bestimmte Nachrichten senden und empfangen kann.
+- Jan fokussiert sich auf die Konzeption und Umsetzung der Blockchain selbst. Dazu gehört fürs erste beispielsweise die Entwicklung einer einfachen Blockchain-Applikation, die Daten in Blöcke schreibt, diese über hashes zu einer Blockchain verbindet und diese Chain lokal speichern und abrufen kann.
+
+Die einzelnen Aufgaben und der Arbeitsfortschrit werden in Github-Projects verwaltet.
+
+### 2. Konzept
+
+#### 2.1 Speicherung der Blöcke
 
 - Jeder Node speichert unabhängig die gesamte Blockchain mit den bereits validierten Blöcken\
   -> Shared Nothing (Eigener CPU, RAM und Festplatte)
@@ -13,33 +21,81 @@ In dieser Dokumentation werden die wichtigsten Punkte, wie Konzept oder verwende
   Transaktionsdaten des Blocks, sowie der Hash des vorhergehenden Blocks festgehalten
 
 
+#### 2.2 Peer-to-Peer-Netzwerk Architektur
 
-------------------------------------------------------
+- Unstrukturiertes Netzwerk
+- Ein Node verbindet sich nur mit einer bestimmten Anzahl von anderen Nodes 
+- Alle Nodes sind sowohl server als auch client (-> servent) 
+  -> download- und upload-fähig
+  -> gleiche Aufgaben, Funktionen und Rechte:
+    - transaktionen erstellen
+    - transaktionen validieren
+    - blöcke minen
+    - blockchain validieren und synchronisieren
+- Es gibt keine verschieden node-Typen/Rollen. Z.B. keine pruned-nodes, die nicht die ganze Blockchain speichern, sondern nur full nodes
+- Damit ein neuer Node eine erste Verbindung herstellen kann, werden ein paar IP-Adressen hardgecoded (wie bei Bitcoin) 
+- Auserdem wird es einen Server geben der Ip Adressen von Nodes zurückgibt, die schonmal mit dem Server verbunden waren.
 
-```markdown
-Syntax highlighted code block
+##### Alle Nodes können folgende Nachrichten senden und empfangen:
 
-# Header 1
-## Header 2
-### Header 3
+- version
+- verack
+- getAddr
+- addr
+- ping
+- pong
 
-- Bulleted
-- List
+- getBlocks
+- inv
+- getData
+- block
 
-1. Numbered
-2. List
+im folgenden werden diese Nachrichten sowie deren Zweck, Inhalt und Ablauf genauer beschrieben:
 
-**Bold** and _Italic_ and `Code` text
+##### Verbindungsaufbau:
 
-[Link](url) and ![Image](src)
-```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
 
-### Jekyll Themes
+sequenzdiagramm
+payload der nachrichten
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/TimmMoetz/blockchain-lab/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+(Zweck, Inhalt und Ablauf)
 
-### Support or Contact
+##### Initial Block Download (IBD)
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+IBD wird ausgeführt wenn ein Node das erste mal gestartet wird und keine Blockchain vorhanden ist und anschließend in einem bestimmten Zeitintervall wiederholt, damit die Blockchain aktuell bleibt.
+
+![Image](blockchain-lab\docs\assets\blocks-first-flowchart.svg)
+
+![Image](blockchain-lab\docs\assets\IBD.svg)
+
+
+Payload von getblocks: hash des obersten Blocks in der Blockchain des Nodes (oder wie in bitcoin auch mehrere?)
+
+Payload von inv: Liste von hashes aller Blöcke in der Blockchain des Nodes, ab dem Block mikt dem Hash aus der getblocks-Nachricht 
+
+
+Wenn ein Node neuen Block generiert (mining), schickt er eine inv-Nachricht (payload: hash des neuen Blocks) an seine Peers. Diese können dann den neuen block mit getdata anfordern.
+
+
+(Zweck, Inhalt und Ablauf)
+
+
+Die längste Chain ist die Chain mit den meisten Blöcken (so wie in Bitcoins erster version. Aktuell wird das anhand der benötigten energy zum minen der Cahin bestimmt, aber das ist zu sprengt unseren ramen und ist auch nicht relevant, weil wir auch keine difficulty verändern werden)
+
+
+
+#### Noch offene Fragen / ToDos
+
+version - verack weglassen oder abkürzen(3way)?
+ping - pong weglassen?
+
+library? In bezug auf p2p findet man am meisten zu twisted und socket
+
+- protkoll? etc pub/sub, req/res, push/ pull?
+
+
+
+- (auserdem wird es einen server geben der ip adressen zurückgibt)?
+- Netzwerk Topologie: ? (neighbour selection)
+
