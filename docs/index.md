@@ -65,9 +65,9 @@ payload der nachrichten
 
 IBD wird ausgeführt wenn ein Node das erste mal gestartet wird und keine Blockchain vorhanden ist und anschließend in einem bestimmten Zeitintervall wiederholt, damit die Blockchain aktuell bleibt.
 
-![Image](blockchain-lab\docs\assets\blocks-first-flowchart.svg)
+![Image](https://github.com/TimmMoetz/blockchain-lab/blob/gh-pages/docs/assets/blocks-first-flowchart.svg)
 
-![Image](blockchain-lab\docs\assets\IBD.svg)
+![Image](https://github.com/TimmMoetz/blockchain-lab/blob/gh-pages/docs/assets/IBD.svg)
 
 
 Payload von getblocks: hash des obersten Blocks in der Blockchain des Nodes (oder wie in bitcoin auch mehrere?)
