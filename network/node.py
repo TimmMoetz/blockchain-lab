@@ -66,25 +66,20 @@ class P2PNode(Node):
     def start_up(self):
     
         self.start()
-        if len(sys.argv) > 2:
-            peerPort = int(sys.argv[2])
-            self.connect_with_node('127.0.0.1', peerPort)
+        for port in sys.argv:
+            if port != self.port and port != sys.argv[0]:
+                self.connect_with_node('127.0.0.1', int(port))
 
-            if len(sys.argv) > 3:
-                peerPort1 = int(sys.argv[2])
-                self.connect_with_node('127.0.0.1', peerPort1)
-                peerPort2 = int(sys.argv[3])
-                self.connect_with_node('127.0.0.1', peerPort2)
+        if len(sys.argv) > 3:
+            self.send_to_nodes({'message':'printConns','payload':''})
+            self.print_conns()
 
-                self.send_to_nodes({'message':'printConns','payload':''})
-                self.print_conns()
+            payload = "moiiiiiin"
+            print("Send Flüster-Post: " + payload + " from Node " + self.id + " to Node " + self.all_nodes[0].id)
+            self.send_to_node(self.all_nodes[0], {'message': 'flüsterPost', 'payload': payload})
+            self.fluester_post_requested = True
 
-                payload = "moiiiiiin"
-                print("Send Flüster-Post: " + payload + " from Node " + self.id + " to Node " + self.all_nodes[0].id)
-                self.send_to_node(self.all_nodes[0], {'message': 'flüsterPost', 'payload': payload})
-                self.fluester_post_requested = True
-
-                #node.send_to_nodes({'message':'getaddr','payload':''})
+            #node.send_to_nodes({'message':'getaddr','payload':''})
 
 
 if __name__ == "__main__":
