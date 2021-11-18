@@ -1,18 +1,26 @@
-from time import time
-import json
 import hashlib
+import json
+from textwrap import dedent
+from uuid import uuid4
+import jsonpickle
+from flask import Flask
+from urllib.parse import urlparse
+from Crypto.PublicKey import RSA
+from Crypto.Signature import *
+from time import time
 
 
 class Block (object):
-    def __init__(self, time, index, transactions):
-        self.time = time  # Time block created
-        self.index = index  # Block number
-        self.transactions = transactions  # Transaction data
-        self.hash = self.calculateHash()  # Hash of a block
-        self.prev = ''  # Hash of previous block
+    def __init__(self, transactions, time, index):
+        self.index = index
+        self.transactions = transactions
+        self.time = time
+        self.prev = ''
+        self.hash = self.calculateHash()
 
     def calculateHash(self):
         hashTransactions = ""
+
         for transaction in self.transactions:
             hashTransactions += transaction.hash
 
