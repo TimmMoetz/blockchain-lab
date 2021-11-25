@@ -18,13 +18,25 @@ class P2PNode(Node):
         print("outbound_node_connected (" + self.id + "): " + node.id)
         self.print_conns()
 
-        if len(self.all_nodes) < self.max_connections:   # self.nodes_inbound ???
+        """         if node.port == self.genesis_port:    # self.nodes_inbound ???
             msg = {'message':'get_addr','payload':''}
-            self.send_to_node(node, msg)
+            self.send_to_node(node, msg) """
         
     def inbound_node_connected(self, node):
         print("inbound_node_connected: (" + self.id + "): " + node.id)
         self.print_conns()
+
+        # When the maximum connections is reached, it disconnects the connection 
+        if len(self.nodes_inbound) > self.max_connections:
+            # sends host, port and id of his peers
+            payload = []
+            for conn in self.all_nodes:
+                if conn.port != node.port:   #???
+                    payload.append({'host': conn.host, 'port': conn.port,'id': conn.id})
+            msg = {'message':'addr','payload':payload}
+            self.send_to_node(node, msg)
+            msg = {'message':'disconnect_me','payload':''}
+            self.send_to_node(node, msg)
 
     def inbound_node_disconnected(self, node):
         print("inbound_node_disconnected: (" + self.id + "): " + node.id)
@@ -66,9 +78,12 @@ class P2PNode(Node):
             self.disconnect_with_node(node)
 
         if data['message'] == 'addr':
+            nodes_outbound_at_start = self.nodes_outbound
             for conn in data['payload']:
                 self.connect_with_node(conn['host'], conn['port'])
-        
+                if self.nodes_outbound != nodes_outbound_at_start:
+                    return #??? recursiv
+                    
     def node_disconnect_with_outbound_node(self, node):
         print("node wants to disconnect with oher outbound node: (" + self.id + "): " + node.id)
         
@@ -145,7 +160,7 @@ class P2PNode(Node):
                 connection, client_address = self.sock.accept()
 
                 self.debug_print("Total inbound connections:" + str(len(self.nodes_inbound)))
-
+                
                 # Basic information exchange (not secure) of the id's of the nodes!
                 data = connection.recv(4096).decode('utf-8')
                 connected_node = json.loads(data)  # When a node is connected, it sends its id and port
