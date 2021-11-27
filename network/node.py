@@ -1,6 +1,5 @@
 import sys
 from p2pnetwork.node import Node
-from random import randint
 import time
 import json
 import socket
@@ -11,44 +10,38 @@ class P2PNode(Node):
         super(P2PNode, self).__init__(host, port, id, callback, max_connections)
         self.fluester_post_requested = False
         self.genesis_port = 80
+        self.potential_peers = [self.genesis_port]
 
         print("MyPeer2PeerNode: Started")
 
     def outbound_node_connected(self, node):
         print("outbound_node_connected (" + self.id + "): " + node.id)
-        self.print_conns()
 
-        """         if node.port == self.genesis_port:    # self.nodes_inbound ???
-            msg = {'message':'get_addr','payload':''}
-            self.send_to_node(node, msg) """
-        
     def inbound_node_connected(self, node):
         print("inbound_node_connected: (" + self.id + "): " + node.id)
-        self.print_conns()
 
-        # When the maximum connections is reached, it disconnects the connection 
+        # When the maximum connections is reached, it sends host, port and id of his peers and disconnects the connection 
         if len(self.nodes_inbound) > self.max_connections:
-            # sends host, port and id of his peers
             payload = []
-            for conn in self.all_nodes:
-                if conn.port != node.port:   #???
+            for conn in self.nodes_inbound:
+                if conn.port != node.port:
                     payload.append({'host': conn.host, 'port': conn.port,'id': conn.id})
+
             msg = {'message':'addr','payload':payload}
             self.send_to_node(node, msg)
-            msg = {'message':'disconnect_me','payload':''}
-            self.send_to_node(node, msg)
+
+            node.stop()   # stop connection
 
     def inbound_node_disconnected(self, node):
         print("inbound_node_disconnected: (" + self.id + "): " + node.id)
+        self.print_conns()
 
     def outbound_node_disconnected(self, node):
         print("outbound_node_disconnected: (" + self.id + "): " + node.id)
+        self.print_conns()
 
     def node_message(self, node, data):
         print("node_message (" + self.id + ") from " + node.id + ": " + data['message'] +" with payload: "+ str(data['payload']))
-
-        if data['message'] == 'print_conns':
-            self.print_conns()
         
         if data['message'] == 'flüster_post':
             if self.fluester_post_requested:
@@ -60,29 +53,16 @@ class P2PNode(Node):
                         print("relay Flüster-Post " + data['payload'] + " from Node " + self.id + " to Node " + conn.id)
                         self.send_to_node(conn , data)
 
-        if data['message'] == 'get_addr':
-            # sends host, port and id of his peers
-            payload = []
-            for conn in self.all_nodes:
-                if conn.port != node.port:   #???
-                    payload.append({'host': conn.host, 'port': conn.port,'id': conn.id})
-            msg = {'message':'addr','payload':payload}
-            self.send_to_node(node, msg)
-                
-            # When the maximum connections is reached, it disconnects the connection 
-            if len(self.nodes_inbound) > self.max_connections:
-                msg = {'message':'disconnect_me','payload':''}
-                self.send_to_node(node, msg)
-
-        if data['message'] == 'disconnect_me':
-            self.disconnect_with_node(node)
-
         if data['message'] == 'addr':
-            nodes_outbound_at_start = self.nodes_outbound
+            # addr is received from nodes that want to disconnect, the payload contains addresses from potential peers
+            self.disconnect_with_node(node)
+            self.potential_peers.remove(node.port)
+
             for conn in data['payload']:
-                self.connect_with_node(conn['host'], conn['port'])
-                if self.nodes_outbound != nodes_outbound_at_start:
-                    return #??? recursiv
+                self.potential_peers.append(conn["port"])
+
+            self.connect_with_node('127.0.0.1', self.potential_peers[0])
+            print(self.potential_peers)
                     
     def node_disconnect_with_outbound_node(self, node):
         print("node wants to disconnect with oher outbound node: (" + self.id + "): " + node.id)
@@ -97,7 +77,7 @@ class P2PNode(Node):
         for conn in self.nodes_inbound:
             print("in:")
             print(conn)
-
+        print("---")
 
     def connect_with_node(self, host, port, reconnect=False):
         """ Make a connection with another node that is running on host with port. When the connection is made, 
@@ -211,15 +191,10 @@ class P2PNode(Node):
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        genesis_port = int(sys.argv[1])
-        node = P2PNode("127.0.0.1", genesis_port, genesis_port, max_connections=3)
-        node.start_up(genesis_port)
-
-    else:
-        port = randint(1000, 5000)
+        port = int(sys.argv[1])
         node = P2PNode("127.0.0.1", port, port, max_connections=3)
         node.start_up(port)
 
-    input = input("type 's' to stop the node:   ")
+    input = input("type 's' to stop the node \n")
     if input == 's':
         node.stop()
