@@ -1,5 +1,5 @@
 import hashlib
-from Block import Block, Transaction
+from block import Block, Transaction
 
 dig = hashlib.sha256(b"hello world").hexdigest()
 print("Digest=" + str(dig))

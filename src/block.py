@@ -2,14 +2,12 @@ from datetime import datetime
 import hashlib
 import json
 from abc import ABC, abstractmethod
-
-BLOCKCHAIN_DIR = 'blocks/'
-
+import os
 
 class Serializable(ABC):
-    def serialize(self):
-        return json.dumps(self.to_dict(),
-                          sort_keys=True).encode("utf-8")
+    def serialize(self, hash = None):
+        return json.dumps(self.to_dict(hash),
+                          sort_keys=True)
 
     @abstractmethod
     def to_dict(self):
@@ -40,35 +38,38 @@ class Block(Serializable):
     def add_transaction(self, t):
         self.transactions.append(t)
 
-    def to_dict(self):
+    def to_dict(self, hash = None):
         transactions = list()
-        for t in self. transactions:
+        for t in self.transactions:
             transactions.append(t.to_dict())
 
-        return {
-            "predecessor": self.predecessor,
-            "transactions": transactions
-        }
+        if hash:
+            return {
+                "hash": hash,
+                "block": {
+                    "predecessor": self.predecessor,
+                    "transactions": transactions
+                }
+            }
+        else:
+            return {
+                "block": {
+                    "predecessor": self.predecessor,
+                    "transactions": transactions
+                }
+            }
 
     def hash(self):
         print("Erzeuge Hash für:", self.serialize())
-        return hashlib.sha256(self.serialize()).hexdigest()
+        return hashlib.sha256(self.serialize().encode("utf-8")).hexdigest()
 
     def write_to_file(self, directory):
-        h = self.hash()
+        blocks_count = len(os.listdir(directory))
+        current_block_index = "blk" + str(blocks_count + 1)
+
+        hash = self.hash()
         try:
-            with open(directory + "/" + str(h), "w") as file:
-                file.write(str(self.serialize()))
+            with open(directory + "/" + current_block_index, "w") as file:
+                file.write(str(self.serialize(hash)))
         except EOFError:
             print("...")
-
-
-def main():
-    b1 = Block(pred=None)
-    t1 = Transaction(source='Timme', target='Jan', amount=1000)
-    b1.add_transaction(t1)
-    b1.write_to_file("./blocks")
-
-
-if __name__ == '__main__':
-    main()
