@@ -4,7 +4,7 @@ import json
 
 class Blockchain(): 
     def __init__(self) -> None:
-        self.blockchain_dir = "./blockchain"
+        self.blockchain_dir = os.path.dirname(os.path.realpath(__file__)) + "/blockchain"
 
     def get_best_block(self):
         block_file_names = os.listdir(self.blockchain_dir)
