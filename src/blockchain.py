@@ -5,18 +5,18 @@ import json
 class Blockchain(): 
     def __init__(self) -> None:
         self.blockchain_dir = os.path.dirname(os.path.realpath(__file__)) + "/blockchain"
+        self.latest_block_hash_file = os.path.dirname(os.path.realpath(__file__)) + "/latest_block_hash"
+    
+    def get_block(self, hash):
+        with open(self.blockchain_dir + "/" + hash, "rb") as file:
+            block_str = file.read()
+            block = json.loads(block_str)
+        return block
 
-    def get_best_block(self):
-        block_file_names = os.listdir(self.blockchain_dir)
-        best_block_file_name = block_file_names[len(block_file_names) -1]
-        with open(self.blockchain_dir + "/" + best_block_file_name) as file:
-            best_block_str = file.read()
-        best_block = json.loads(best_block_str)
-        return best_block
-
-    def add_block(self, transactions):                             
-        best_block = self.get_best_block()
-        pred_hash = best_block['hash']
+    def add_block(self, transactions):   
+        
+        with open(self.latest_block_hash_file) as file:
+            pred_hash = file.read()
 
         block = Block(pred=pred_hash)
         for transaction in transactions:
@@ -24,5 +24,7 @@ class Blockchain():
 
         block.write_to_file(self.blockchain_dir)
 
+        with open(self.latest_block_hash_file, "w") as file:
+            file.write(str(block.hash()))
 
 

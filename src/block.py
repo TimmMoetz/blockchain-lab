@@ -5,9 +5,9 @@ from abc import ABC, abstractmethod
 import os
 
 class Serializable(ABC):
-    def serialize(self, hash = None):
-        return json.dumps(self.to_dict(hash),
-                          sort_keys=True)
+    def serialize(self):
+        return json.dumps(self.to_dict(),
+                          sort_keys=True).encode("utf-8")
 
     @abstractmethod
     def to_dict(self):
@@ -38,38 +38,24 @@ class Block(Serializable):
     def add_transaction(self, t):
         self.transactions.append(t)
 
-    def to_dict(self, hash = None):
+    def to_dict(self):
         transactions = list()
         for t in self.transactions:
             transactions.append(t.to_dict())
 
-        if hash:
-            return {
-                "hash": hash,
-                "block": {
-                    "predecessor": self.predecessor,
-                    "transactions": transactions
-                }
-            }
-        else:
-            return {
-                "block": {
-                    "predecessor": self.predecessor,
-                    "transactions": transactions
-                }
-            }
+        return {
+            "predecessor": self.predecessor,
+            "transactions": transactions
+        }
 
     def hash(self):
         print("Erzeuge Hash für:", self.serialize())
-        return hashlib.sha256(self.serialize().encode("utf-8")).hexdigest()
+        return hashlib.sha256(self.serialize()).hexdigest()
 
     def write_to_file(self, directory):
-        blocks_count = len(os.listdir(directory))
-        current_block_index = "blk" + str(blocks_count + 1)
-
         hash = self.hash()
         try:
-            with open(directory + "/" + current_block_index, "w") as file:
-                file.write(str(self.serialize(hash)))
+            with open(directory + "/" + str(hash), "wb") as file:
+                file.write(self.serialize())
         except EOFError:
-            print("...")
+            print("Couldn't save block")
