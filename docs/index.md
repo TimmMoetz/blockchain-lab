@@ -77,3 +77,14 @@ Wenn ein Node neuen Block generiert (mining), schickt er eine inv-Nachricht (pay
 ###### Longest Chain
 
 Die längste Chain ist die Chain mit den meisten Blöcken (so wie in Bitcoins erster version. Aktuell wird das anhand der benötigten energy zum minen der Cahin bestimmt, aber das ist zu sprengt unseren ramen und ist auch nicht relevant, weil wir auch keine difficulty verändern werden)
+
+###### Transaktionen und Longest Chain
+1. Warum keine Transaktionen verschickt werden:
+    1. Transaktion wird an weitere Nodes verschickt -> Bei erfolgreichem Anhängen von Node A an die Chain muss Transaktion bei anderen Nodes aus dem Memory Pool gelöscht werden
+    2. Candidate Block Konzept nicht möglich, da kein Mining implementiert wird
+2. Konzept zum erstellen von Transaktionen:
+    1. Eine Transaktion (evtl. 2/3 Transaktionen) wird einem Block gespeichert
+    2. Sobald der Block gespeichert wird, wird er der Blockchain angehängt
+    3. Erst wenn ein weiterer Block der Chain hinzugefügt wird, ist die Transaktion in dem vorletzten Block gültig
+3. Konzept der longest Chain und dem Austausch der Blöcke
+    1. Wenn zwei Chains mit jeweils unterschiedlichen letzen Blöcken im Netzwerk existieren wird beim entstehen des nächsten Blocks eine neue längste Chain gebildet. Der Block in der anderen Chain fällt somit heraus und die Transaktion darin wird gelöscht.
