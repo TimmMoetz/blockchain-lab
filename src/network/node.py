@@ -11,6 +11,7 @@ class P2PNode(Node):
         self.fluester_post_requested = False
         self.genesis_port = 80
         self.potential_peers = [self.genesis_port]
+        self.votes = []
 
         print("MyPeer2PeerNode: Started")
 
@@ -63,7 +64,55 @@ class P2PNode(Node):
 
             self.connect_with_node('127.0.0.1', self.potential_peers[0])
             print(self.potential_peers)
-                    
+
+        if data['message'] == 'prepare-to-validate': 
+            transaction = data['payload']
+            # validate transaction 
+            valid = True
+            
+            # simulate that node 81 can't validate the transaction
+            #if self.port == 81:
+                #valid = False
+
+            if valid:
+                payload = {'transaction': transaction, 'valid': True }
+                msg = {'message':'vote','payload': payload}
+                self.send_to_node(node, msg)
+                print("transaction valid")
+            else:
+                payload = {'transaction': transaction, 'valid': False }
+                msg = {'message':'vote','payload': payload}
+                self.send_to_node(node, msg)
+                print("transaction not valid")
+
+        if data['message'] == 'vote': 
+            if data['payload']['valid']:
+                self.votes.append(True)
+            else:
+                self.votes.append(False)
+            
+            # if all peers have voted
+            if len(self.votes) == len(self.all_nodes):
+                if all(self.votes):
+                    # add transaction in data['payload']['transaction'] to mempool
+                    payload = {'transaction': data['payload']['transaction'], 'valid': True }
+                    msg = {'message':'global-decision','payload': payload}
+                    self.send_to_nodes(msg)
+                    print("transaction validated and added to mempool")
+                else:
+                    payload = {'transaction': data['payload']['transaction'], 'valid': False }
+                    msg = {'message':'global-decision','payload': payload}
+                    self.send_to_nodes(msg)
+                    print("transaction not valid")
+
+        if data['message'] == 'global-decision': 
+            if data['payload']['valid']:
+                 # add transaction in data['payload']['transaction'] to mempool
+                 print("transaction validated and added to mempool")
+            else:
+                print("transaction not valid")
+
+
     def node_disconnect_with_outbound_node(self, node):
         print("node wants to disconnect with oher outbound node: (" + self.id + "): " + node.id)
         
@@ -198,3 +247,8 @@ if __name__ == "__main__":
     input = input("type 's' to stop the node \n")
     if input == 's':
         node.stop()
+    elif input == 't':
+        # validate transaction... if valid:
+        transaction = {'hash':'test'}
+        msg = {'message':'prepare-to-validate','payload': transaction}
+        node.send_to_nodes(msg)
