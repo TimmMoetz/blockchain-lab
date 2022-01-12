@@ -1,5 +1,6 @@
 from network.node import P2PNode
 import sys
+import os
 from Crypto.PublicKey import RSA
 from Crypto.Signature import *
 
@@ -12,18 +13,18 @@ if __name__ == "__main__":
         node.start_up(port)
 
 
-    # generate keys
-    key = RSA.generate(2048)
-    private_key = key.export_key()
-    with open("private_key.pem", "wb") as file:
-        file.write(private_key)
+    if not os.path.exists('./keys/private_key.pem') or not os.path.exists('./keys/public_key.pem'):
+        # generate keys
+        key = RSA.generate(2048)
+        private_key = key.export_key()
+        with open("keys/private_key.pem", "wb") as file:
+            file.write(private_key)
 
-    public_key = key.publickey().export_key()
-    with open("public_key.pem", "wb") as file:
-        file.write(public_key)
-    
-    decoded_public_key = public_key.decode('ASCII')
-    print(decoded_public_key)
+        public_key = key.publickey().export_key()
+        with open("keys/public_key.pem", "wb") as file:
+            file.write(public_key)
+        
+        print(public_key.decode('ASCII'))
 
 
     possible_inputs = ['s', 't']

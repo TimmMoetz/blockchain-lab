@@ -14,7 +14,7 @@ class Mapper():
             with open(Mapper.blockchain_dir + "/" + str(hash), "wb") as file:
                 file.write(block)
         except EOFError:
-            print("Couldn't save block")
+            print("Couldn't write block")
 
     @staticmethod
     def read_block(hash):
@@ -23,7 +23,7 @@ class Mapper():
                 block_str = file.read()
                 return json.loads(block_str)
         except EOFError:
-            print("Couldn't save block")
+            print("Couldn't read block")
 
     @staticmethod
     def read_latest_block_hash():
@@ -31,7 +31,7 @@ class Mapper():
             with open(Mapper.latest_block_hash_file) as file:
                 return file.read()
         except EOFError:
-            print("Couldn't save block")
+            print("Couldn't read latest-block-hash")
 
     @staticmethod
     def write_latest_block_hash(hash):
@@ -39,4 +39,4 @@ class Mapper():
             with open(Mapper.latest_block_hash_file, "w") as file:
                 file.write(str(hash))
         except EOFError:
-            print("Couldn't save block")
+            print("Couldn't write latest-block-hash")
