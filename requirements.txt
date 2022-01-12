@@ -1,1 +1,2 @@
 p2pnetwork==1.1
+pycryptodome==3.12.0

@@ -1,4 +1,3 @@
-import sys
 from p2pnetwork.node import Node
 import time
 import json
@@ -233,25 +232,3 @@ class P2PNode(Node):
         self.start()
         if port != self.genesis_port:
             self.connect_with_node('127.0.0.1', self.genesis_port)
-
-
-if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        port = int(sys.argv[1])
-        node = P2PNode("127.0.0.1", port, port, max_connections=3)
-        node.start_up(port)
-
-    possible_inputs = ['s', 't']
-    user_input = ''
-
-    while user_input not in possible_inputs:
-        user_input = input("type 's' to stop the node or 't' to make a transaction \n")    
-                         
-        if user_input == 's':
-            node.stop()
-        elif user_input == 't':
-            # validate transaction first... if valid:
-            transaction = {'hash':'test'}
-            msg = {'message':'prepare-to-validate','payload': transaction}
-            node.send_to_nodes(msg)
-            user_input = ''   
