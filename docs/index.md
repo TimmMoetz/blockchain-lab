@@ -88,3 +88,30 @@ Die längste Chain ist die Chain mit den meisten Blöcken (so wie in Bitcoins er
     3. Erst wenn ein weiterer Block der Chain hinzugefügt wird, ist die Transaktion in dem vorletzten Block gültig
 3. Konzept der longest Chain und dem Austausch der Blöcke
     1. Wenn zwei Chains mit jeweils unterschiedlichen letzen Blöcken im Netzwerk existieren wird beim entstehen des nächsten Blocks eine neue längste Chain gebildet. Der Block in der anderen Chain fällt somit heraus und die Transaktion darin wird gelöscht.
+
+
+
+## Durchlauf Start - Transaktion - Blockerstellung
+
+##### Start
+Beim Starten des Nodes wird geprüft, ob schon ein public, sowie private Key erstellt wurde, wenn dies noch nicht erfolgt ist, wird einer erstellt und in einer Datei gespeichert. Danach wird sich die aktuelle Chain durch den IBD (Initial Block Download) von einem anderen Node im Netzwerk geholt.
+
+##### Transaktion und Memorypool
+Ein Node kann über die Kommando Zeile eine Transaktion erstellen, wobei dieser den Public Key des Empfängers und den zu sendenden Betrag einträgt. Die Transaktion wird mit folgendem Inhalt erstellt:
+
+1.	Receiver: Public Key des Empfängers (es gibt nur einen Receiver)
+2.	Sender: Public Key des Senders
+3.	Signature: Transaktionshash + Private Key vom Sender
+4.	Amount: Betrag der versendet wird
+
+Der Versand und die Validierung verlaufen nach dem Two Phase Commit und wird mit allen direkten Peers durchgeführt. Es werden zwei Sachen validiert:
+
+1.	Prüfung, ob der Sender ausreichend Guthaben für die gewünschte Transaktion hat
+2.	Signature validieren, wobei Hash A = Signature + Public Key des Senders ist und Hash B = der Hash der Transaktion ist. Somit muss Hash A = Hash B sein, damit die Transaktion als valide gilt.
+
+Sobald die Transaktion von allen Peers validiert wurde, wird sie im Ordner Memorypool gespeichert und befindet sich im Status Pending Transaction. 
+
+##### Mining und Anhängen des Blocks
+Wenn ein Node dann den Befehl zum Minen in die Kommando Zeile eingibt, wird aus allen Transaktionen in dessen Memorypool ein Candidate Block mit den ersten zehn Transaktionen erstellt. Das mining funktioniert nach dem Proof of Work Mechanismus. Der Nonce wird so lange hochgezählt und neu gehashed, bis die festgelegte Schwierigkeit erfüllt wird. Sobald ein passender Nonce gefunden wurde wird der dazugehörige Block validiert. Dabei wird geschaut, ob alle Transaktionen validiert wurden, ob die Schwierigkeit erfüllt worden ist, ob der Hash dem neu kalkulierten Hash entspricht und ob die Transaktionen im Block bereits von einem anderen Node in einem Block gespeichert und an die Chain angehängt wurden. Der dann validierte Block wird an die direkten Peers versendet und die Transaktionen des Blocks werden aus dem Memorypool gelöscht und im letzten Schritt an die eigene Chain angehängt.
+Die direkten Peers, die den neuen Block empfangen, validieren diesen ebenfalls anhand der oben beschriebenen Überprüfungen und senden diesen dann ebenfalls weiter. Wenn der vorherige Hash des neuen Blocks der eigene latest Block Hash ist, werden die Transaktionen ebenfalls aus dem eigenen Memorypool gelöscht und an die eigene Chain gehängt. Wenn dies nicht der Fall ist wird wie am Anfang der IBD durchgeführt.
+
