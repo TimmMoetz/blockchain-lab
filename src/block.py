@@ -3,6 +3,8 @@ import hashlib
 import json
 from abc import ABC, abstractmethod
 import os
+from Mapper import Mapper
+
 
 class Serializable(ABC):
     def serialize(self):
@@ -52,10 +54,8 @@ class Block(Serializable):
         print("Erzeuge Hash für:", self.serialize())
         return hashlib.sha256(self.serialize()).hexdigest()
 
-    def write_to_file(self, directory):
+    def write_to_file(self):
         hash = self.hash()
-        try:
-            with open(directory + "/" + str(hash), "wb") as file:
-                file.write(self.serialize())
-        except EOFError:
-            print("Couldn't save block")
+        block = self.serialize()
+
+        Mapper().write_block(hash, block)
