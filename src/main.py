@@ -3,6 +3,7 @@ import sys
 import os
 from Crypto.PublicKey import RSA
 from Crypto.Signature import *
+from network.bo.messages.prepare_to_validate import Prepare_to_validate
 
 if __name__ == "__main__":
     
@@ -10,7 +11,9 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         port = int(sys.argv[1])
         node = P2PNode("127.0.0.1", port, port, max_connections=3)
-        node.start_up(port)
+        node.start_up()
+    else:
+        print("specify the port as argument to start a node")
 
 
     if not os.path.exists('./keys/private_key.pem') or not os.path.exists('./keys/public_key.pem'):
@@ -37,6 +40,6 @@ if __name__ == "__main__":
         elif user_input == 't':
             # validate transaction first... if valid:
             transaction = {'hash':'test'}
-            msg = {'message':'prepare-to-validate','payload': transaction}
-            node.send_to_nodes(msg)
+            msg = Prepare_to_validate(transaction)
+            node.send_to_nodes(msg.to_dict()) 
             user_input = ''   

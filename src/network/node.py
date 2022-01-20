@@ -2,6 +2,11 @@ from p2pnetwork.node import Node
 import time
 import json
 import socket
+from .bo.messages.prepare_to_validate import Prepare_to_validate
+from .bo.messages.vote import Vote
+from .bo.messages.global_decision import Global_decision
+from .bo.messages.addr import Addr
+from .bo.peer import Peer
 
 class P2PNode(Node):
 
@@ -11,6 +16,7 @@ class P2PNode(Node):
         self.genesis_port = 80
         self.potential_peers = [self.genesis_port]
         self.votes = []
+        self.debug = False
 
         print("MyPeer2PeerNode: Started")
 
@@ -20,16 +26,17 @@ class P2PNode(Node):
     def inbound_node_connected(self, node):
         print("inbound_node_connected: (" + self.id + "): " + node.id)
 
-        # When the maximum connections is reached, it sends host, port and id of his peers and disconnects the connection 
+        # When the maximum connections is reached, it sends host and port of his peers and disconnects the connection 
         if len(self.nodes_inbound) > self.max_connections:
-            payload = []
+            peers = []
             for conn in self.nodes_inbound:
                 if conn.port != node.port:
-                    payload.append({'host': conn.host, 'port': conn.port,'id': conn.id})
-
-            msg = {'message':'addr','payload':payload}
-            self.send_to_node(node, msg)
-
+                    peer = Peer(conn.host, conn.port)
+                    peers.append(peer)
+            
+            msg = Addr(peers)
+            self.send_to_node(node, msg.to_dict())
+            
             node.stop()   # stop connection
 
     def inbound_node_disconnected(self, node):
@@ -40,32 +47,28 @@ class P2PNode(Node):
         print("outbound_node_disconnected: (" + self.id + "): " + node.id)
         self.print_conns()
 
-    def node_message(self, node, data):
-        print("node_message (" + self.id + ") from " + node.id + ": " + data['message'] +" with payload: "+ str(data['payload']))
-        
-        if data['message'] == 'flüster_post':
-            if self.fluester_post_requested:
-                print("Flüster-Post received: " + data['payload'])
-                self.fluester_post_requested = False 
-            else:
-                for conn in self.all_nodes:
-                    if conn.id != node.id:
-                        print("relay Flüster-Post " + data['payload'] + " from Node " + self.id + " to Node " + conn.id)
-                        self.send_to_node(conn , data)
+    def node_message(self, sender_node_conn, message):
+        print("node_message (" + self.id + ") from " + sender_node_conn.id + ": " + message['name'] +" with payload: "+ str(message))
 
-        if data['message'] == 'addr':
+        if message['name'] == 'addr':
             # addr is received from nodes that want to disconnect, the payload contains addresses from potential peers
-            self.disconnect_with_node(node)
-            self.potential_peers.remove(node.port)
+            msg_in = Addr.from_dict(message)
 
-            for conn in data['payload']:
-                self.potential_peers.append(conn["port"])
+            self.disconnect_with_node(sender_node_conn)
+            self.potential_peers.remove(sender_node_conn.port)
+
+            peer: Peer
+            for peer in msg_in.get_peers():
+                self.potential_peers.append(peer.get_port())
 
             self.connect_with_node('127.0.0.1', self.potential_peers[0])
             print(self.potential_peers)
+       
 
-        if data['message'] == 'prepare-to-validate': 
-            transaction = data['payload']
+        if message["name"] =='prepare-to-validate':
+            msg_in = Prepare_to_validate.from_dict(message)
+
+            transaction = msg_in.get_transaction()
             # validate transaction 
             valid = True
             
@@ -74,36 +77,38 @@ class P2PNode(Node):
                 valid = False
 
             if valid:
-                payload = {'transaction': transaction, 'valid': True }
+                msg_out = Vote(transaction, True)
                 print("vote transaction valid")
             else:
-                payload = {'transaction': transaction, 'valid': False }
+                msg_out = Vote(transaction, False)
                 print("vote transaction not valid")
 
-            msg = {'message':'vote','payload': payload}
-            self.send_to_node(node, msg)
+            self.send_to_node(sender_node_conn, msg_out.to_dict())
+        
+        
+        if message['name'] == 'vote': 
+            msg_in = Vote.from_dict(message)
 
-        if data['message'] == 'vote': 
-            
-            self.votes.append(data['payload']['valid'])
+            self.votes.append(msg_in.get_valid())
             
             # if all peers have voted
             if len(self.votes) == len(self.all_nodes):
                 if all(self.votes):
-                    # add transaction in data['payload']['transaction'] to mempool
-                    payload = {'transaction': data['payload']['transaction'], 'valid': True }
+                    # add transaction to mempool
+                    msg_out = Global_decision(msg_in.get_transaction(), True)
                     print("transaction validated and added to mempool")
                 else:
-                    payload = {'transaction': data['payload']['transaction'], 'valid': False }
+                    msg_out = Global_decision(msg_in.get_transaction(), False)
                     print("transaction not valid")
 
-                msg = {'message':'global-decision','payload': payload}
-                self.send_to_nodes(msg)
+                self.send_to_nodes(msg_out.to_dict())
                 self.votes.clear()
-                
-        if data['message'] == 'global-decision': 
-            if data['payload']['valid']:
-                # add transaction in data['payload']['transaction'] to mempool
+
+        if message['name'] == 'global-decision': 
+            msg_in = Global_decision.from_dict(message)
+
+            if msg_in.get_valid():
+                # add transaction to mempool
                 print("transaction validated and added to mempool")
             else:
                 print("transaction not valid")
@@ -227,8 +232,8 @@ class P2PNode(Node):
         print("Node stopped")
 
 
-    def start_up(self, port):
+    def start_up(self):
     
         self.start()
-        if port != self.genesis_port:
+        if self.port != self.genesis_port:
             self.connect_with_node('127.0.0.1', self.genesis_port)
