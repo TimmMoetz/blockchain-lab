@@ -1,9 +1,9 @@
-from network.node import P2PNode
 import sys
 import os
 from Crypto.PublicKey import RSA
 from Crypto.Signature import *
-from network.bo.messages.prepare_to_validate import Prepare_to_validate
+from network.node import P2PNode
+from network.conversations.transaction_validation import Transaction_Validation
 
 if __name__ == "__main__":
     
@@ -40,6 +40,9 @@ if __name__ == "__main__":
         elif user_input == 't':
             # validate transaction first... if valid:
             transaction = {'hash':'test'}
-            msg = Prepare_to_validate(transaction)
-            node.send_to_nodes(msg.to_dict()) 
+
+            validation = Transaction_Validation(node, transaction)
+            node.conversations["transaction_validation"] = validation
+            validation.send_prepare_to_validate()
+            
             user_input = ''   
