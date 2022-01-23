@@ -1,10 +1,9 @@
 import json
 import os
 
-
 class Mapper():
     blockchain_dir = os.path.dirname(
-        os.path.realpath(__file__)) + "/blockchain"
+        os.path.realpath(__file__)) + "/blocks"
     latest_block_hash_file = os.path.dirname(
         os.path.realpath(__file__)) + "/latest_block_hash"
 

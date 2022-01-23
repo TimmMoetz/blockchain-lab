@@ -2,9 +2,9 @@ from datetime import datetime
 import hashlib
 import json
 from abc import ABC, abstractmethod
-import os
-from Mapper import Mapper
-
+import sys  
+sys.path.append("..")
+from db.mapper import Mapper
 
 class Serializable(ABC):
     def serialize(self):

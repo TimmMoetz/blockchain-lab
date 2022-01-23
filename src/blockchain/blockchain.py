@@ -1,8 +1,5 @@
 from block import Block
-from Mapper import Mapper
-import os
-import json
-
+from db.mapper import Mapper
 
 class Blockchain():
     def add_block(self, transactions):

@@ -16,15 +16,15 @@ if __name__ == "__main__":
         print("specify the port as argument to start a node")
 
 
-    if not os.path.exists('./keys/private_key.pem') or not os.path.exists('./keys/public_key.pem'):
+    if not os.path.exists('db/keys/private_key.pem') or not os.path.exists('db/keys/public_key.pem'):
         # generate keys
         key = RSA.generate(2048)
         private_key = key.export_key()
-        with open("keys/private_key.pem", "wb") as file:
+        with open("db/keys/private_key.pem", "wb") as file:
             file.write(private_key)
 
         public_key = key.publickey().export_key()
-        with open("keys/public_key.pem", "wb") as file:
+        with open("db/keys/public_key.pem", "wb") as file:
             file.write(public_key)
         
         print(public_key.decode('ASCII'))
