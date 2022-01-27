@@ -24,6 +24,7 @@ class Initial_Peer_Discovery():
 
         self.node.disconnect_with_node(sender_node_conn)
         
+        # not tested:
         peer_to_remove = None
         for peer in self.node.potential_peers:
             if peer.get_host() == sender_node_conn.host:
