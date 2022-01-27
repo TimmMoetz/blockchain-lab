@@ -11,7 +11,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 2:
         host = sys.argv[1]
         port = int(sys.argv[2])
-        node = P2PNode(host, port, port, max_connections=3)
+        node = P2PNode(host, port, port, max_connections=1)
         node.start_up()
     else:
         print("specify the port as argument to start a node")

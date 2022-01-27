@@ -23,11 +23,17 @@ class Initial_Peer_Discovery():
         msg_in = Addr.from_dict(message)
 
         self.node.disconnect_with_node(sender_node_conn)
-        self.node.potential_peers.remove(sender_node_conn.port)
+        
+        peer_to_remove = None
+        for peer in self.node.potential_peers:
+            if peer.get_host() == sender_node_conn.host:
+                peer_to_remove = peer
+                print(peer_to_remove)
+        self.node.potential_peers.remove(peer_to_remove)
 
         peer: Peer
         for peer in msg_in.get_peers():
-            self.node.potential_peers.append(peer.get_port())
+            self.node.potential_peers.append(peer)
 
-        self.node.connect_with_node('127.0.0.1', self.node.potential_peers[0])
+        self.node.connect_with_node(self.node.potential_peers[0].get_host(), self.node.potential_peers[0].get_port())
         print(self.node.potential_peers)

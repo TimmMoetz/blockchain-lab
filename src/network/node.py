@@ -3,6 +3,7 @@ import json
 import socket
 from p2pnetwork.node import Node
 from .bo.messages.prepare_to_validate import Prepare_to_validate
+from .bo.peer import Peer
 from .conversations.transaction_validation import Transaction_Validation
 from .conversations.initial_peer_discovery import Initial_Peer_Discovery
 
@@ -12,7 +13,7 @@ class P2PNode(Node):
         super(P2PNode, self).__init__(host, port, id, callback, max_connections)
         self.genesis_host = "192.168.0.89"
         self.genesis_port = 80
-        self.potential_peers = [self.genesis_host + str(self.genesis_port)]
+        self.potential_peers = [Peer(self.genesis_host, self.genesis_port)]
         self.conversations = {}
         self.debug = False
 
@@ -20,9 +21,11 @@ class P2PNode(Node):
 
     def outbound_node_connected(self, node):
         print("outbound_node_connected (" + self.id + "): " + node.id)
+        print(self.all_nodes)
 
     def inbound_node_connected(self, node):
         print("inbound_node_connected: (" + self.id + "): " + node.id)
+        print(self.all_nodes)
 
         # When the maximum connections is reached, it sends host and port of his peers and disconnects the connection 
         if len(self.nodes_inbound) > self.max_connections:

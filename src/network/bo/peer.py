@@ -26,3 +26,5 @@ class Peer():
     def from_dict(dict):
         return Peer(dict["host"], dict["port"])
 
+    def __str__(self):
+        return 'Peer: {}:{}'.format(self.get_host(), self.get_port())
