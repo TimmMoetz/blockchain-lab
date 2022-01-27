@@ -8,9 +8,10 @@ from network.conversations.transaction_validation import Transaction_Validation
 if __name__ == "__main__":
     
     # start node
-    if len(sys.argv) > 1:
-        port = int(sys.argv[1])
-        node = P2PNode("127.0.0.1", port, port, max_connections=3)
+    if len(sys.argv) > 2:
+        host = sys.argv[1]
+        port = int(sys.argv[2])
+        node = P2PNode(host, port, port, max_connections=3)
         node.start_up()
     else:
         print("specify the port as argument to start a node")

@@ -10,8 +10,9 @@ class P2PNode(Node):
 
     def __init__(self, host, port, id=None, callback=None, max_connections=0):
         super(P2PNode, self).__init__(host, port, id, callback, max_connections)
+        self.genesis_host = "192.168.0.89"
         self.genesis_port = 80
-        self.potential_peers = [self.genesis_port]
+        self.potential_peers = [self.genesis_host + str(self.genesis_port)]
         self.conversations = {}
         self.debug = False
 
@@ -181,5 +182,5 @@ class P2PNode(Node):
     def start_up(self):
     
         self.start()
-        if self.port != self.genesis_port:
-            self.connect_with_node('127.0.0.1', self.genesis_port)
+        if self.host != self.genesis_host:
+            self.connect_with_node(self.genesis_host, self.genesis_port)
