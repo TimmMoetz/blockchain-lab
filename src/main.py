@@ -1,31 +1,11 @@
 import sys
 import os
-import json
 from Crypto.PublicKey import RSA
 from Crypto.Signature import *
 from network.node import P2PNode
 from network.conversations.transaction_validation import Transaction_Validation
 
 if __name__ == "__main__":
-
-    def base58(address_hex):
-        alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
-        b58_string = ''
-        # Get the number of leading zeros
-        leading_zeros = len(address_hex) - len(address_hex.lstrip('0'))
-        # Convert hex to decimal
-        address_int = int(address_hex, 16)
-        # Append digits to the start of string
-        while address_int > 0:
-            digit = address_int % 58
-            digit_char = alphabet[digit]
-            b58_string = digit_char + b58_string
-            address_int //= 58
-        # Add ‘1’ for each 2 leading zeros
-        ones = leading_zeros // 2
-        for one in range(ones):
-            b58_string = '1' + b58_string
-        return b58_string
 
     # start node
     if len(sys.argv) > 1:
@@ -57,19 +37,8 @@ if __name__ == "__main__":
                          
         if user_input == 's':
             node.stop()
+
         elif user_input == 't':
-
-            target = input("please enter the public key of the target you want to send coins: \n")
-            amount = input("please enter the amount you want to send: \n")
-
-            with open("db/keys/public_key.pem", "rb") as file:
-                source = file.read()
-            
-            print(amount)
-            print(source.hexdigest())
-            target = input("please enter the public key of the target you want to send coins: \n")
-            print(target)
-
             # validate transaction first... if valid:
             transaction = {'hash':'test'}
 
@@ -78,4 +47,3 @@ if __name__ == "__main__":
             validation.send_prepare_to_validate()
             
             user_input = ''   
-            
