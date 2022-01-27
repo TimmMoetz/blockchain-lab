@@ -17,20 +17,25 @@ class Serializable(ABC):
 
 
 class Transaction(Serializable):
-    def __init__(self, source=None, target=None, amount=0):
+    def __init__(self, source=None, target=None, amount=0, signature=None):
         self.__source = source
         self.__target = target
         self.__amount = amount
         self.__timestamp = datetime.now()
+        self.__signature = signature
 
     def to_dict(self):
         return {
             "source": self.__source,
             "target": self.__target,
             "amount": self.__amount,
-            "timestamp": self.__timestamp.strftime("%m/%d/%Y, %H:%M:%S")
+            "timestamp": self.__timestamp.strftime("%m/%d/%Y, %H:%M:%S"),
+            "signature": self.__signature,
         }
-
+        
+    def hash(self):
+        print("Erzeuge Hash für:", self.serialize())
+        return hashlib.sha256(self.serialize()).hexdigest()
 
 class Block(Serializable):
     def __init__(self, pred=None):
