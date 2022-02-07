@@ -5,36 +5,29 @@ In dieser Dokumentation werden die wichtigsten Punkte, wie Konzept oder verwende
 ### 1. Vorgehensweise
 
 Die Arbeit wird zwischen den Teammitgliedern Jan und Timm folgendermaßen aufgeteilt:
-- Timm fokussiert sich auf die Konzeption und Umsetzung des Peer-to-Peer-Netzwerkes. Dazu gehört fürs erste beispielsweise die Entwicklung eines p2p-clients (der ebenso Server-Eigenschaften besitzt), der sich mit anderen Clients/Nodes verbinden kann und bestimmte Nachrichten senden und empfangen kann.
-- Jan fokussiert sich auf die Konzeption und Umsetzung der Blockchain selbst. Dazu gehört fürs erste beispielsweise die Entwicklung einer einfachen Blockchain-Applikation, die Daten in Blöcke schreibt, diese über hashes zu einer Blockchain verbindet und diese Chain lokal speichern und abrufen kann.
+- Timm fokussiert sich auf die Umsetzung des Peer-to-Peer-Netzwerkes. Dazu gehört fürs erste beispielsweise die Entwicklung eines p2p-clients (der ebenso Server-Eigenschaften besitzt), der sich mit anderen Clients/Nodes verbinden kann und bestimmte Nachrichten sendet und empfängt.
+- Jan fokussiert sich auf die Konzeption und Umsetzung der Blockchain selbst. Dazu gehört fürs erste beispielsweise die Entwicklung einer einfachen Blockchain-Applikation, die Daten in Blöcke schreibt, diese über Hashes zu einer Blockchain verbindet und diese Chain lokal speichern und abrufen kann.
 
-Die einzelnen Aufgaben und der Arbeitsfortschrit werden in Github-Projects verwaltet.
 
 ### 2. Konzept
 
-#### 2.1 Speicherung der Blöcke
+Die Punkte 2.1 und 2.2 beinhalten die Überlegungen, die im Vorhinein getätigt wurden. Dieses wird sich im Laufe des Projekts aufgrund von Zeitdruck und der Schwierigkeit bei der Umsetzung mancher Probleme verändern.
 
-- Jeder Node speichert unabhängig die gesamte Blockchain mit den bereits validierten Blöcken\
-  -> Shared Nothing (Eigener CPU, RAM und Festplatte)
-- Ein Block wird durch eine JSON-Datei abgebildet und gespeichert
-- Der Dateiname besteht aus dem Index des Blocks (blk00001). Im Dateikörper werden der Hash, die Zeit der Erstellung,\
-  Transaktionsdaten des Blocks, sowie der Hash des vorhergehenden Blocks festgehalten
+#### 2.1 Peer-to-Peer-Netzwerk Architektur
+
+Bei der Netzwerk Architektur handelt es sich um ein unstrukturiertes Netzwerk. Ein Node verbindet sich mit einer bestimmten Anzahl von anderen Nodes, wobei alle Nodes sowohl als Server, als auch als Client fungieren (-> Servent). Sie sind download- sowie uploadfähig und haben die gleichen Funktionen, Aufgaben und Rechte. Diese beinhalten die Erstellung und Validierung von Transaktionen, das "Schürfen" der Blöcke mit den darin befindlichen Transaktionen und schlussendlich die Validierung und Synchronisation der Blockchain. Da es keine unterschiedlichen Nodetypen gibt und die Blockchain immer komplett gespeichert wird handelt es sich um sogenannte Full-Nodes.
+Damit ein neuer Node eine erste Verbindung herstellen kann, werden ein paar IP-Adressen hardgecoded. Dieses Prinzip orientiert sich an der Bitcoin Netzwerk Architektur. Außerdem gibt es einen Server, der IP-Adressen von Nodes zurückgibt, die schonmal mit dem Server verbunden waren.
+
+#### 2.2 Speicherung der Blöcke
+
+Wie bereits erwähnt speichert jeder Node unabhängig die gesamte Blockchain mit den bereits validierten Blöcken. Dies erfolgt anhand des Shared Nothing Ansatzes. Das bedeutet, dass jeder Node seine eigene CPU, Festplatte und seinen eigenen RAM hat.
+Ein Block wird durch eine JSON-Datei abgebildet und gespeichert. Der Dateiname besteht dabei asu dem indes des Blocks (blk000001). Im Dateikörper werden der Hash, die Zeit der Erstellung, Transaktionsdaten des Blocks, sowie der Hash des vorhergehendes Blocks festgehalten.
 
 
-#### 2.2 Peer-to-Peer-Netzwerk Architektur
+#### 2.3 Initial Block Download (IBD)
 
-- Unstrukturiertes Netzwerk
-- Ein Node verbindet sich nur mit einer bestimmten Anzahl von anderen Nodes 
-- Alle Nodes sind sowohl server als auch client (-> servent) 
-  -> download- und upload-fähig
-  -> gleiche Aufgaben, Funktionen und Rechte:
-    - transaktionen erstellen
-    - transaktionen validieren
-    - blöcke minen
-    - blockchain validieren und synchronisieren
-- Es gibt keine verschieden node-Typen/Rollen. Z.B. keine pruned-nodes, die nicht die ganze Blockchain speichern, sondern nur full nodes
-- Damit ein neuer Node eine erste Verbindung herstellen kann, werden ein paar IP-Adressen hardgecoded (wie bei Bitcoin) 
-- Auserdem wird es einen Server geben der Ip Adressen von Nodes zurückgibt, die schonmal mit dem Server verbunden waren.
+
+
 
 ##### Alle Nodes können folgende Nachrichten senden und empfangen:
 
