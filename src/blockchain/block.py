@@ -2,7 +2,8 @@ from datetime import datetime
 import hashlib
 import json
 from abc import ABC, abstractmethod
-import sys  
+import sys
+from merkle_tree import MerkleTree
 sys.path.append("..")
 from db.mapper import Mapper
 
@@ -57,7 +58,18 @@ class Block(Serializable):
 
     def hash(self):
         print("Erzeuge Hash für:", self.serialize())
-        return hashlib.sha256(self.serialize()).hexdigest()
+        transactions = list()
+        for t in self.transactions:
+            transactions.append(json.dumps(t.to_dict()))
+        mtree = MerkleTree(transactions)
+        t_hash = mtree.getRootHash()
+
+        block_dict = {
+            "predecessor": self.predecessor,
+            "transactions": t_hash
+        }
+        serialized_block = json.dumps(block_dict, sort_keys=True).encode("utf-8")
+        return hashlib.sha256(serialized_block).hexdigest()
 
     def write_to_file(self):
         hash = self.hash()
