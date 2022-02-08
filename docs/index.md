@@ -2,6 +2,7 @@
 
 In dieser Dokumentation werden die wichtigsten Punkte, wie Konzept oder verwendete Technologien erläutert.
 
+
 ### 1. Vorgehensweise
 
 Die Arbeit wird zwischen den Teammitgliedern Jan und Timm folgendermaßen aufgeteilt:
@@ -11,12 +12,13 @@ Die Arbeit wird zwischen den Teammitgliedern Jan und Timm folgendermaßen aufget
 
 ### 2. Konzept
 
-Die Punkte 2.1 und 2.2 beinhalten die Überlegungen, die im Vorhinein getätigt wurden. Dieses wird sich im Laufe des Projekts aufgrund von Zeitdruck und der Schwierigkeit bei der Umsetzung mancher Probleme verändern.
+Die Punkte 2.1 und 2.2 beinhalten die Überlegungen, die im Vorhinein getätigt wurden. Dieses wird sich im Laufe des Projekts aufgrund von Zeitdruck und der Schwierigkeit bei der Umsetzung mancher Probleme verändern. Die beschriebenen Konzepte und überlegungen in 2.3, 2.4 und 2.5 wurden im Dezember (circa Hälfte des Projekts) angestellt, die allerdings ebenfalls nicht voll umfänglich oder in der Form umgesetzt werden konnten.
 
 #### 2.1 Peer-to-Peer-Netzwerk Architektur
 
 Bei der Netzwerk Architektur handelt es sich um ein unstrukturiertes Netzwerk. Ein Node verbindet sich mit einer bestimmten Anzahl von anderen Nodes, wobei alle Nodes sowohl als Server, als auch als Client fungieren (-> Servent). Sie sind download- sowie uploadfähig und haben die gleichen Funktionen, Aufgaben und Rechte. Diese beinhalten die Erstellung und Validierung von Transaktionen, das "Schürfen" der Blöcke mit den darin befindlichen Transaktionen und schlussendlich die Validierung und Synchronisation der Blockchain. Da es keine unterschiedlichen Nodetypen gibt und die Blockchain immer komplett gespeichert wird handelt es sich um sogenannte Full-Nodes.
 Damit ein neuer Node eine erste Verbindung herstellen kann, werden ein paar IP-Adressen hardgecoded. Dieses Prinzip orientiert sich an der Bitcoin Netzwerk Architektur. Außerdem gibt es einen Server, der IP-Adressen von Nodes zurückgibt, die schonmal mit dem Server verbunden waren.
+
 
 #### 2.2 Speicherung der Blöcke
 
@@ -26,62 +28,29 @@ Ein Block wird durch eine JSON-Datei abgebildet und gespeichert. Der Dateiname b
 
 #### 2.3 Initial Block Download (IBD)
 
+Der IBD wird ausgeführt, wenn ein Node das erste mal gestartet wird und keine Blockchain vorhanden ist. Dies wird in einem bestimmten Zeitintervall wiederholt, damit die Blockchain aktuell bleibt. 
+Die Nodes können dabei folgende Nachrichten senden und empfangen:
+version, verack, getAddr, addr, ping, pong, getBlocks, inv, getData, block
+
+Nachfolgend ein Überblick über den IBD:
+<img src="https://github.com/TimmMoetz/blockchain-lab/blob/gh-pages/docs/assets/blocks-first-flowchart.svg" alt="Image"/>
+
+Sequenzdiagramm des IBD mit anschließender Erklärung des Payloads der einzelnen Nachrichten:
+<img src="https://github.com/TimmMoetz/blockchain-lab/blob/gh-pages/docs/assets/IBD.svg" alt="Image"/>
+
+Die Nachricht getblock beinhaltet den Hash des obersten Blocks in der Blockchain eines Nodes. In der inv Nachricht ist eine Liste von Hashes aller Blöcke in der Blockchain eines Nodes aufgeführt, diese Liste beginnt mit dem Hash des Blocks aus der getblocks Nachricht. Getdata beinhaltet die gleiche Liste, wie die inv Nachricht. Der Payload von block besteht aus einem Block im JSON-Format.
 
 
+#### 2.4 Longest Chain
 
-##### Alle Nodes können folgende Nachrichten senden und empfangen:
-
-- version
-- verack
-- getAddr
-- addr
-- ping
-- pong
-
-- getBlocks
-- inv
-- getData
-- block
-
-im folgenden werden diese Nachrichten sowie deren Zweck, Inhalt und Ablauf genauer beschrieben:
+Die Longest Chain in einer Blockchain ist die Kette mit den meisten angehängten Blöcken. Dabei wird das Konzept wie es in der ersten Bitcoin Version war verwendet. Mittlerweile wird die Longest Chain anhand der benötigten Energie zum minen bestimmt, dies würde allerdings den Aufwand sprengen.
+Wenn zwei Chains mit jeweils unterschiedlichen letzen Blöcken im Netzwerk existieren wird beim entstehen des nächsten Blocks eine neue längste Chain gebildet. Der Block in der anderen Chain fällt somit heraus und die Transaktion darin wird gelöscht.
 
 
-##### Initial Block Download (IBD)
+#### 2.5 Transaktionen
 
-IBD wird ausgeführt wenn ein Node das erste mal gestartet wird und keine Blockchain vorhanden ist und anschließend in einem bestimmten Zeitintervall wiederholt, damit die Blockchain aktuell bleibt.
-
-<img src="https://github.com/TimmMoetz/blockchain-lab/blob/gh-pages/docs/assets/blocks-first-flowchart.svg" alt="Image" class="inline"/>
-
-<img src="https://github.com/TimmMoetz/blockchain-lab/blob/gh-pages/docs/assets/IBD.svg" alt="Image" class="inline"/>
-
-Payload von getblocks: hash des obersten Blocks in der Blockchain des Nodes 
-
-Payload von inv: Liste von hashes aller Blöcke in der Blockchain des Nodes, ab dem Block mit dem Hash aus der getblocks-Nachricht 
-
-Payload von getdata: sie selbe Liste wie in inv
-
-Payload von block: ein block im JSON-Format
-
-
-
-Wenn ein Node neuen Block generiert (mining), schickt er eine inv-Nachricht (payload: hash des neuen Blocks) an seine Peers. Diese können dann den neuen block mit getdata anfordern.
-
-
-###### Longest Chain
-
-Die längste Chain ist die Chain mit den meisten Blöcken (so wie in Bitcoins erster version. Aktuell wird das anhand der benötigten energy zum minen der Cahin bestimmt, aber das ist zu sprengt unseren ramen und ist auch nicht relevant, weil wir auch keine difficulty verändern werden)
-
-###### Transaktionen und Longest Chain
-1. Warum keine Transaktionen verschickt werden:
-    1. Transaktion wird an weitere Nodes verschickt -> Bei erfolgreichem Anhängen von Node A an die Chain muss Transaktion bei anderen Nodes aus dem Memory Pool gelöscht werden
-    2. Candidate Block Konzept nicht möglich, da kein Mining implementiert wird
-2. Konzept zum erstellen von Transaktionen:
-    1. Eine Transaktion (evtl. 2/3 Transaktionen) wird einem Block gespeichert
-    2. Sobald der Block gespeichert wird, wird er der Blockchain angehängt
-    3. Erst wenn ein weiterer Block der Chain hinzugefügt wird, ist die Transaktion in dem vorletzten Block gültig
-3. Konzept der longest Chain und dem Austausch der Blöcke
-    1. Wenn zwei Chains mit jeweils unterschiedlichen letzen Blöcken im Netzwerk existieren wird beim entstehen des nächsten Blocks eine neue längste Chain gebildet. Der Block in der anderen Chain fällt somit heraus und die Transaktion darin wird gelöscht.
-
+Da bei erfolgreichem Anhängen eines Blocks die darin enthaltenen Transaktionen bei anderen Nodes aus dem Memory Pool gelöscht werden müssten werden keine Transaktionen verschickt, weil der Aufwand dessen zu groß wäre. Ebenso ist das Konzepts des Candidate Blocks wie bei Bitcoin nicht umsetztbar, da kein Mining implementiert wird.
+Eine Transaktion (evtl. mehrere) wird in einem Block gespeichert. Sobald dies erfolgt wird der Block an die Blockchain angehängt. Erst wenn ein weiterer Block der Chain hinzugefügt wird ist die Transaktion in dem vorletzten Block gültig.
 
 
 ## Durchlauf Start - Transaktion - Blockerstellung
