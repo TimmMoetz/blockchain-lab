@@ -12,7 +12,7 @@ Die Arbeit wird zwischen den Teammitgliedern Jan und Timm folgendermaßen aufget
 
 ### 2. Konzept
 
-Die Punkte 2.1 und 2.2 beinhalten die Überlegungen, die im Vorhinein getätigt wurden. Dieses wird sich im Laufe des Projekts aufgrund von Zeitdruck und der Schwierigkeit bei der Umsetzung mancher Probleme verändern. Die beschriebenen Konzepte und überlegungen in 2.3, 2.4 und 2.5 wurden im Dezember (circa Hälfte des Projekts) angestellt, die allerdings ebenfalls nicht voll umfänglich oder in der Form umgesetzt werden konnten.
+Die Punkte 2.1 und 2.2 beinhalten die Überlegungen, die im Vorhinein getätigt wurden. Dieses wird sich im Laufe des Projekts aufgrund von Zeitdruck und der Schwierigkeit bei der Umsetzung mancher Probleme verändern. Die beschriebenen Konzepte und überlegungen in 2.3, 2.4 und 2.5 wurden im Dezember (circa Hälfte des Projekts) angestellt, die allerdings ebenfalls nicht voll umfänglich oder in der Form umgesetzt werden konnten. 2.6 und alle Unterpunkte sind im Januar entstanden, also gegen Ende des Projekts. Selbst dort sind noch Umsetzungsschwierigkeiten aufgetreten, die dann beim Endprodukt nicht mehr enthalten waren und einige Features nicht umgesetzt werden konnten.
 
 #### 2.1 Peer-to-Peer-Netzwerk Architektur
 
@@ -53,12 +53,12 @@ Da bei erfolgreichem Anhängen eines Blocks die darin enthaltenen Transaktionen 
 Eine Transaktion (evtl. mehrere) wird in einem Block gespeichert. Sobald dies erfolgt wird der Block an die Blockchain angehängt. Erst wenn ein weiterer Block der Chain hinzugefügt wird ist die Transaktion in dem vorletzten Block gültig.
 
 
-## Durchlauf Start - Transaktion - Blockerstellung
+#### 2.6 Durchlauf Start - Transaktion - Blockerstellung
 
-##### Start
-Beim Starten des Nodes wird geprüft, ob schon ein public, sowie private Key erstellt wurde, wenn dies noch nicht erfolgt ist, wird einer erstellt und in einer Datei gespeichert. Danach wird sich die aktuelle Chain durch den IBD (Initial Block Download) von einem anderen Node im Netzwerk geholt.
+##### 2.6.1 Start
+Beim Starten des Nodes wird geprüft, ob schon ein public, sowie private Key erstellt wurde, wenn dies noch nicht erfolgt ist, wird jeweils einer der beiden Keys erstellt und in einer Datei gespeichert. Danach wird sich die aktuelle Chain durch den IBD (Initial Block Download) von einem anderen Node im Netzwerk geholt.
 
-##### Transaktion und Memorypool
+##### 2.6.2 Transaktion und Memorypool
 Ein Node kann über die Kommando Zeile eine Transaktion erstellen, wobei dieser den Public Key des Empfängers und den zu sendenden Betrag einträgt. Die Transaktion wird mit folgendem Inhalt erstellt:
 
 1.	Receiver: Public Key des Empfängers (es gibt nur einen Receiver)
@@ -73,7 +73,10 @@ Der Versand und die Validierung verlaufen nach dem Two Phase Commit und wird mit
 
 Sobald die Transaktion von allen Peers validiert wurde, wird sie im Ordner Memorypool gespeichert und befindet sich im Status Pending Transaction. 
 
-##### Mining und Anhängen des Blocks
+##### 2.6.3 Mining und Anhängen des Blocks
 Wenn ein Node dann den Befehl zum Minen in die Kommando Zeile eingibt, wird aus allen Transaktionen in dessen Memorypool ein Candidate Block mit den ersten zehn Transaktionen erstellt. Das mining funktioniert nach dem Proof of Work Mechanismus. Der Nonce wird so lange hochgezählt und neu gehashed, bis die festgelegte Schwierigkeit erfüllt wird. Sobald ein passender Nonce gefunden wurde wird der dazugehörige Block validiert. Dabei wird geschaut, ob alle Transaktionen validiert wurden, ob die Schwierigkeit erfüllt worden ist, ob der Hash dem neu kalkulierten Hash entspricht und ob die Transaktionen im Block bereits von einem anderen Node in einem Block gespeichert und an die Chain angehängt wurden. Der dann validierte Block wird an die direkten Peers versendet und die Transaktionen des Blocks werden aus dem Memorypool gelöscht und im letzten Schritt an die eigene Chain angehängt.
 Die direkten Peers, die den neuen Block empfangen, validieren diesen ebenfalls anhand der oben beschriebenen Überprüfungen und senden diesen dann ebenfalls weiter. Wenn der vorherige Hash des neuen Blocks der eigene latest Block Hash ist, werden die Transaktionen ebenfalls aus dem eigenen Memorypool gelöscht und an die eigene Chain gehängt. Wenn dies nicht der Fall ist wird wie am Anfang der IBD durchgeführt.
+
+
+### 3 Tatsächlich umgesetzt
 
