@@ -16,11 +16,11 @@ class Mapper():
             print("Couldn't write block")
 
     @staticmethod
-    def read_block(hash):
+    def read_block(block_hash):
         try:
-            with open(Mapper.blockchain_dir + "/" + hash, "rb") as file:
-                block_str = file.read()
-                return json.loads(block_str)
+            with open(Mapper.blockchain_dir + "/" + block_hash, "rb") as file:
+                block_bytes = file.read()
+                return json.loads(block_bytes)
         except EOFError:
             print("Couldn't read block")
 

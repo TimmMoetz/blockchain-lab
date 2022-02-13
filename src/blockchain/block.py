@@ -2,10 +2,10 @@ from datetime import datetime
 import hashlib
 import json
 from abc import ABC, abstractmethod
-import sys
-from merkle_tree import MerkleTree
-sys.path.append("..")
-from db.mapper import Mapper
+import os
+from src.blockchain.merkle_tree import MerkleTree
+from src.db.mapper import Mapper
+
 
 class Serializable(ABC):
     def serialize(self):
@@ -18,33 +18,68 @@ class Serializable(ABC):
 
 
 class Transaction(Serializable):
-    def __init__(self, source=None, target=None, amount=0, signature=None):
-        self.__source = source
-        self.__target = target
-        self.__amount = amount
-        self.__timestamp = datetime.now()
-        self.__signature = signature
+    def __init__(self, source=None, target=None, amount=0, timestamp=datetime.now()):
+        self.source = source
+        self.target = target
+        self.amount = amount
+        self.timestamp = timestamp
+
+    @staticmethod
+    def from_dict(transaction_dict):
+        return Transaction(transaction_dict["source"], transaction_dict["target"],
+                           transaction_dict["amount"], transaction_dict["timestamp"])
 
     def to_dict(self):
         return {
-            "source": self.__source,
-            "target": self.__target,
-            "amount": self.__amount,
-            "timestamp": self.__timestamp.strftime("%m/%d/%Y, %H:%M:%S"),
-            "signature": self.__signature,
+            "source": self.source,
+            "target": self.target,
+            "amount": self.amount,
+            "timestamp": self.timestamp.strftime("%m/%d/%Y, %H:%M:%S")
         }
         
     def hash(self):
         print("Erzeuge Hash für:", self.serialize())
         return hashlib.sha256(self.serialize()).hexdigest()
 
-class Block(Serializable):
-    def __init__(self, pred=None):
-        self.predecessor = pred
-        self.transactions = list()
+    def get_balance(self):
+        balance = 100   # +100 balance for testing
+        for block_hash in os.listdir("../db/blocks/"):
+            block_dict = Mapper().read_block(block_hash)
+            block: Block = Block().from_dict(block_dict, block_hash)
+            try:
+                for transaction in block.transactions:
+                    if transaction.source == self.source:
+                        balance -= transaction.amount
+                    if transaction.target == self.source:
+                        balance += transaction.amount
+            except AttributeError:
+                print("no transaction")
+        return balance
 
-    def add_transaction(self, t):
-        self.transactions.append(t)
+    def validate(self):
+        balance = self.get_balance()
+        if balance < self.amount:
+            return False
+        else:
+            return True
+
+
+class Block(Serializable):
+    def __init__(self, pred=None, transactions=None, saved_hash=None):
+        if transactions is None:
+            transactions = list()
+        self.predecessor = pred
+        self.transactions = transactions
+        self.saved_hash = saved_hash
+
+    @staticmethod
+    def from_dict(block_dict, block_hash):
+        block = Block(block_dict["predecessor"], block_dict["transactions"], block_hash)
+        transaction_objects = []
+        for transaction_dict in block.transactions:
+            transaction_objects.append(Transaction.from_dict(transaction_dict))
+        block.transactions = transaction_objects
+        return block
 
     def to_dict(self):
         transactions = list()
@@ -70,6 +105,19 @@ class Block(Serializable):
         }
         serialized_block = json.dumps(block_dict, sort_keys=True).encode("utf-8")
         return hashlib.sha256(serialized_block).hexdigest()
+
+    def add_transaction(self, t):
+        self.transactions.append(t)
+
+    def validate(self):
+        for transaction in self.transactions:
+            if not transaction.validate():
+                return False
+
+        if self.saved_hash == self.hash():
+            return True
+        else:
+            return False
 
     def write_to_file(self):
         hash = self.hash()
