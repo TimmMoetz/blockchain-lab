@@ -10,9 +10,9 @@ class Message(ABC):
     def set_name(self, name):
         self._name = name
 
-    def to_dict():
+    def to_dict(self):
         pass
 
     @staticmethod
-    def from_dict():
+    def from_dict(dict):
         pass

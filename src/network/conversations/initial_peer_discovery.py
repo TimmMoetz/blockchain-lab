@@ -1,5 +1,7 @@
 from ..bo.peer import Peer
 from ..bo.messages.addr import Addr
+from ..bo.messages.connection_accepted import Connection_accepted
+
 
 class Initial_Peer_Discovery():
     def __init__(self, node) -> None:
@@ -19,7 +21,7 @@ class Initial_Peer_Discovery():
         node_connection.stop()   # stop connection
 
     # node that searches peer
-    def addr_recieved(self, sender_node_conn, message):
+    def addr_received(self, sender_node_conn, message):
         msg_in = Addr.from_dict(message)
 
         self.node.disconnect_with_node(sender_node_conn)
@@ -31,3 +33,8 @@ class Initial_Peer_Discovery():
 
         self.node.connect_with_node('127.0.0.1', self.node.potential_peers[0])
         print(self.node.potential_peers)
+
+    # node that accepts connection
+    def send_connection_accepted(self, node_connection):
+        msg = Connection_accepted()
+        self.node.send_to_node(node_connection, msg.to_dict())
