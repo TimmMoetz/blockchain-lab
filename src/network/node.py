@@ -6,6 +6,7 @@ from .bo.messages.prepare_to_validate import Prepare_to_validate
 from .conversations.block_download import Block_download
 from .conversations.transaction_validation import Transaction_Validation
 from .conversations.initial_peer_discovery import Initial_Peer_Discovery
+from .conversations.block_broadcasting import Block_broadcasting
 
 
 class P2PNode(Node):
@@ -59,6 +60,10 @@ class P2PNode(Node):
         if message['name'] == 'blocks':
             block_download = Block_download(self)
             block_download.blocks_received(message)
+
+        if message['name'] == 'block':
+            block_broadcasting = Block_broadcasting(self)
+            block_broadcasting.block_received(sender_node_conn, message)
 
         if message["name"] == 'prepare-to-validate':
             msg_in = Prepare_to_validate.from_dict(message)

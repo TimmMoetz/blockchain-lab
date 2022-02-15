@@ -1,0 +1,45 @@
+from ..bo.messages.get_blocks import Get_blocks
+from ..bo.messages.block_message import Block_message
+import os
+import sys
+sys.path.append("..")
+from src.db.mapper import Mapper
+from src.blockchain.block import Block
+
+
+class Block_broadcasting():
+    def __init__(self, node) -> None:
+        self.node = node
+
+    # node that broadcasts the block
+    def broadcast_block(self, block: Block):
+        msg = Block_message(block)
+        self.node.send_to_nodes(msg.to_dict())
+
+    # node that receives the block
+    def block_received(self, sender_node_conn, message):
+        msg_in = Block_message.from_dict(message)
+        block = msg_in.get_block()
+
+        my_block_hashes = os.listdir(os.getcwd() + "/db/blocks/")
+        local_latest_block_hash = Mapper().read_latest_block_hash()
+
+        if block.validate() is False:
+            print("The block is not valid")
+            return
+        if block.saved_hash in my_block_hashes:
+            print("The local blockchain contains the block already")
+            return
+        if block.predecessor == local_latest_block_hash:
+            block.write_to_file()
+            Mapper().write_latest_block_hash(block.saved_hash)
+            print("block saved")
+        else:
+            # start IBD ?
+            pass
+
+        # relay block
+        for conn in self.node.all_nodes:
+            if conn.id != sender_node_conn.id:
+                print("relay block " + block.saved_hash + " from Node " + self.node.id + " to Node " + conn.id)
+                self.node.send_to_node(conn, message)

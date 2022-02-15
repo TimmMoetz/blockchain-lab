@@ -5,6 +5,9 @@ from Crypto.Signature import *
 from network.node import P2PNode
 from network.conversations.transaction_validation import Transaction_Validation
 from network.conversations.block_download import Block_download
+from src.blockchain.block import Transaction, Block
+from src.blockchain.blockchain import Blockchain
+
 
 if __name__ == "__main__":
 
@@ -29,12 +32,12 @@ if __name__ == "__main__":
 
             print(public_key.decode('ASCII'))
 
-
-        possible_inputs = ['s', 'v']
+        possible_inputs = ['s', 'v', 'd', 't']
         user_input = ''
         while user_input not in possible_inputs:
-            user_input = input("type 's' to stop the node or 'v' to validate a transaction "
-                               "or 'd' to download new blocks from a peer \n")
+            user_input = input("type 's' to stop the node \n type 'v' to validate a transaction \n "
+                               "type 'd' to download new blocks from a peer \n "
+                               "type 't' to create transactions, create a block and broadcast it to the network \n")
 
             if user_input == 's':
                 node.stop()
@@ -54,5 +57,29 @@ if __name__ == "__main__":
                 block_download.get_blocks(node.nodes_outbound[0])
 
                 user_input = ''
+
+            elif user_input == 't':
+                transactions = []
+                create_transactions = True
+                while create_transactions:
+                    print("create a transaction:")
+                    source = input("type the sender: \n")
+                    target = input("type the receiver: \n")
+                    amount = input("type the amount: \n")
+                    transaction = Transaction(source, target, int(amount))
+                    transactions.append(transaction)
+                    answer = input("do you want to create another transaction? (j/n) \n")
+                    if answer == 'j':
+                        continue
+                    else:
+                        create_transactions = False
+
+                answer = input("type 'go' to create a block, append it to your blockchain "
+                               "and broadcast it to the network \n")
+                if answer == 'go':
+                    blockchain = Blockchain()
+                    blockchain.add_block(transactions, node)
+                user_input = ''
+
     else:
         print("specify the port as argument to start a node")

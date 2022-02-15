@@ -30,6 +30,7 @@ class Block_download():
             blocks = []
         msg = Blocks(blocks)
         self.node.send_to_node(node_connection, msg.to_dict())
+        print("send blocks to peer")
 
     # node that requested blocks
     def blocks_received(self, message):

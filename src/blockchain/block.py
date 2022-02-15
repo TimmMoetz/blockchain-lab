@@ -43,7 +43,6 @@ class Transaction(Serializable):
         }
         
     def hash(self):
-        print("Erzeuge Hash für:", self.serialize())
         return hashlib.sha256(self.serialize()).hexdigest()
 
     def get_balance(self):
@@ -111,7 +110,6 @@ class Block(Serializable):
         }
 
     def hash(self):
-        print("Erzeuge Hash für:", self.serialize())
         transactions = list()
         for t in self.transactions:
             transactions.append(json.dumps(t.to_dict()))
