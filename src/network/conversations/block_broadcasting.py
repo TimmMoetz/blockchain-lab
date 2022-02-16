@@ -1,3 +1,4 @@
+from .block_download import Block_download
 from ..bo.messages.get_blocks import Get_blocks
 from ..bo.messages.block_message import Block_message
 import os
@@ -35,8 +36,10 @@ class Block_broadcasting():
             Mapper().write_latest_block_hash(block.saved_hash)
             print("block saved")
         else:
-            # start IBD ?
-            pass
+            print("the predecessor of the received block doesn't match the local latest block")
+            print("initiate block download")
+            block_download = Block_download(self.node)
+            block_download.get_blocks(sender_node_conn)
 
         # relay block
         for conn in self.node.all_nodes:

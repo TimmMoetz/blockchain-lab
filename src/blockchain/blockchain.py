@@ -15,7 +15,10 @@ class Blockchain():
 
         block_hash = block.hash()
         block.saved_hash = block_hash
-        my_block_hashes = os.listdir(os.getcwd() + "/db/blocks/")
+        cwd = os.getcwd()
+        if cwd.endswith('tests'):
+            cwd = os.path.dirname(os.getcwd())   # if in directory 'tests', go one directory up
+        my_block_hashes = os.listdir(cwd + "/db/blocks/")
         if block.validate() is False:
             print("The block is not valid")
             return
@@ -30,6 +33,20 @@ class Blockchain():
             block_broadcasting = Block_broadcasting(node)
             block_broadcasting.broadcast_block(block)
             print("block broadcasted")
+
+    def add_block_without_validation(self, transactions):
+        pred_hash = Mapper().read_latest_block_hash()
+
+        block = Block(pred=pred_hash)
+        for transaction in transactions:
+            block.add_transaction(transaction)
+        block_hash = block.hash()
+        block.saved_hash = block_hash
+
+        block.write_to_file()
+        Mapper().write_latest_block_hash(block_hash)
+        print("block saved")
+
 
     def create_genesis_block(self):
         block = Block()

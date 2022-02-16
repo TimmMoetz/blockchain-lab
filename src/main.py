@@ -54,7 +54,14 @@ if __name__ == "__main__":
 
             elif user_input == 'd':
                 block_download = Block_download(node)
-                block_download.get_blocks(node.nodes_outbound[0])
+                if len(node.nodes_outbound) != 0:
+                    peer = node.nodes_outbound[0]
+                    block_download.get_blocks(peer)
+                elif len(node.all_nodes) != 0:
+                    peer = node.all_nodes[0]
+                    block_download.get_blocks(peer)
+                else:
+                    print("no peers")
 
                 user_input = ''
 
@@ -66,10 +73,10 @@ if __name__ == "__main__":
                     source = input("type the sender: \n")
                     target = input("type the receiver: \n")
                     amount = input("type the amount: \n")
-                    transaction = Transaction(source, target, int(amount))
+                    transaction = Transaction(source, target, float(amount))
                     transactions.append(transaction)
-                    answer = input("do you want to create another transaction? (j/n) \n")
-                    if answer == 'j':
+                    answer = input("do you want to create another transaction? (y/n) \n")
+                    if answer == 'y':
                         continue
                     else:
                         create_transactions = False

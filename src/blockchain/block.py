@@ -47,7 +47,10 @@ class Transaction(Serializable):
 
     def get_balance(self):
         balance = 100   # +100 balance for testing
-        local_block_hashes = os.listdir(os.getcwd() + "/db/blocks/")
+        cwd = os.getcwd()
+        if cwd.endswith('tests'):
+            cwd = os.path.dirname(os.getcwd())   # if in directory 'tests', go one directory up
+        local_block_hashes = os.listdir(cwd + "/db/blocks/")
         for block_hash in local_block_hashes:
             block_dict = Mapper().read_block(block_hash)
             block: Block = Block().from_dict(block_dict, block_hash)
@@ -113,8 +116,11 @@ class Block(Serializable):
         transactions = list()
         for t in self.transactions:
             transactions.append(json.dumps(t.to_dict()))
-        mtree = MerkleTree(transactions)
-        t_hash = mtree.getRootHash()
+        if len(transactions) != 0:
+            mtree = MerkleTree(transactions)
+            t_hash = mtree.getRootHash()
+        else:
+            t_hash = transactions
 
         block_dict = {
             "predecessor": self.predecessor,
