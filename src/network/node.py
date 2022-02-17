@@ -3,8 +3,11 @@ import json
 import socket
 from p2pnetwork.node import Node
 from .bo.messages.prepare_to_validate import Prepare_to_validate
+from .conversations.block_download import Block_download
 from .conversations.transaction_validation import Transaction_Validation
 from .conversations.initial_peer_discovery import Initial_Peer_Discovery
+from .conversations.block_broadcasting import Block_broadcasting
+
 
 class P2PNode(Node):
 
@@ -24,9 +27,11 @@ class P2PNode(Node):
         print("inbound_node_connected: (" + self.id + "): " + node.id)
 
         # When the maximum connections is reached, it sends host and port of his peers and disconnects the connection 
+        peer_discovery = Initial_Peer_Discovery(self)
         if len(self.nodes_inbound) > self.max_connections:
-            peer_discovery = Initial_Peer_Discovery(self)           
             peer_discovery.send_addr(node)
+        else:
+            peer_discovery.send_connection_accepted(node)
 
     def inbound_node_disconnected(self, node):
         print("inbound_node_disconnected: (" + self.id + "): " + node.id)
@@ -42,22 +47,38 @@ class P2PNode(Node):
         if message['name'] == 'addr':
             # addr is received from nodes that want to disconnect, the payload contains addresses from potential peers
             peer_discovery = Initial_Peer_Discovery(self)           
-            peer_discovery.addr_recieved(sender_node_conn, message) 
+            peer_discovery.addr_received(sender_node_conn, message)
 
-        if message["name"] == 'prepare-to-validate':   
+        if message['name'] == 'connection-accepted':
+            block_download = Block_download(self)
+            block_download.get_blocks(sender_node_conn)
+
+        if message['name'] == 'get-blocks':
+            block_download = Block_download(self)
+            block_download.get_blocks_received(sender_node_conn, message)
+
+        if message['name'] == 'blocks':
+            block_download = Block_download(self)
+            block_download.blocks_received(message)
+
+        if message['name'] == 'block':
+            block_broadcasting = Block_broadcasting(self)
+            block_broadcasting.block_received(sender_node_conn, message)
+
+        if message["name"] == 'prepare-to-validate':
             msg_in = Prepare_to_validate.from_dict(message)
 
             validation = Transaction_Validation(self, msg_in.get_transaction())
             self.conversations["transaction_validation"] = validation
-            validation.prepare_to_validate_recieved(sender_node_conn)
+            validation.prepare_to_validate_received(sender_node_conn)
         
         if message['name'] == 'vote':
             validation = self.conversations["transaction_validation"]
-            validation.vote_recieved(sender_node_conn, message)
+            validation.vote_received(sender_node_conn, message)
 
         if message['name'] == 'global-decision': 
             validation = self.conversations["transaction_validation"]
-            validation.global_decision_recieved(message)
+            validation.global_decision_received(message)
 
 
     def node_disconnect_with_outbound_node(self, node):

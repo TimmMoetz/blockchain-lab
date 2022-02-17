@@ -26,8 +26,13 @@ class Transaction(Serializable):
 
     @staticmethod
     def from_dict(transaction_dict):
+        if type(transaction_dict["timestamp"]) == str:
+            timestamp = datetime.strptime(transaction_dict["timestamp"], '%m/%d/%Y, %H:%M:%S')
+        else:
+            timestamp = transaction_dict["timestamp"]
+
         return Transaction(transaction_dict["source"], transaction_dict["target"],
-                           transaction_dict["amount"], transaction_dict["timestamp"])
+                           transaction_dict["amount"], timestamp)
 
     def to_dict(self):
         return {
@@ -38,12 +43,15 @@ class Transaction(Serializable):
         }
         
     def hash(self):
-        print("Erzeuge Hash für:", self.serialize())
         return hashlib.sha256(self.serialize()).hexdigest()
 
     def get_balance(self):
         balance = 100   # +100 balance for testing
-        for block_hash in os.listdir("../db/blocks/"):
+        cwd = os.getcwd()
+        if cwd.endswith('tests'):
+            cwd = os.path.dirname(os.getcwd())   # if in directory 'tests', go one directory up
+        local_block_hashes = os.listdir(cwd + "/db/blocks/")
+        for block_hash in local_block_hashes:
             block_dict = Mapper().read_block(block_hash)
             block: Block = Block().from_dict(block_dict, block_hash)
             try:
@@ -59,6 +67,8 @@ class Transaction(Serializable):
     def validate(self):
         balance = self.get_balance()
         if balance < self.amount:
+            print("Not valid: " + str(self.source) + " can't send " +
+                  str(self.amount) + " with a balance of " + str(balance))
             return False
         else:
             return True
@@ -91,13 +101,26 @@ class Block(Serializable):
             "transactions": transactions
         }
 
+    def to_dict_with_hash(self):
+        transactions = list()
+        for t in self.transactions:
+            transactions.append(t.to_dict())
+
+        return {
+            "hash": self.hash(),
+            "predecessor": self.predecessor,
+            "transactions": transactions
+        }
+
     def hash(self):
-        print("Erzeuge Hash für:", self.serialize())
         transactions = list()
         for t in self.transactions:
             transactions.append(json.dumps(t.to_dict()))
-        mtree = MerkleTree(transactions)
-        t_hash = mtree.getRootHash()
+        if len(transactions) != 0:
+            mtree = MerkleTree(transactions)
+            t_hash = mtree.getRootHash()
+        else:
+            t_hash = transactions
 
         block_dict = {
             "predecessor": self.predecessor,
@@ -111,13 +134,14 @@ class Block(Serializable):
 
     def validate(self):
         for transaction in self.transactions:
-            if not transaction.validate():
+            if transaction.validate() is False:
                 return False
 
-        if self.saved_hash == self.hash():
-            return True
-        else:
+        if self.saved_hash != self.hash():
+            print("Not valid: recalculating the hash results in a different hash")
             return False
+        else:
+            return True
 
     def write_to_file(self):
         hash = self.hash()

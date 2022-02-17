@@ -2,6 +2,7 @@ from ..bo.messages.prepare_to_validate import Prepare_to_validate
 from ..bo.messages.vote import Vote
 from ..bo.messages.global_decision import Global_decision
 
+
 class Transaction_Validation():
     def __init__(self, node, transaction) -> None:
         self.node = node
@@ -17,7 +18,7 @@ class Transaction_Validation():
         self.node.send_to_nodes(msg.to_dict()) 
 
     # participants
-    def prepare_to_validate_recieved(self, sender_node_conn):
+    def prepare_to_validate_received(self, sender_node_conn):
         transaction = self.transaction
         # validate transaction 
         valid = True
@@ -36,7 +37,7 @@ class Transaction_Validation():
         self.node.send_to_node(sender_node_conn, msg_out.to_dict())
     
     # coordinator
-    def vote_recieved(self, sender_node_conn, message):
+    def vote_received(self, sender_node_conn, message):
         msg_in = Vote.from_dict(message)
 
         self.votes[sender_node_conn.port] = msg_in.get_valid()
@@ -59,7 +60,7 @@ class Transaction_Validation():
 
     
     # participants
-    def global_decision_recieved(self, message):
+    def global_decision_received(self, message):
         msg = Global_decision.from_dict(message)
 
         if msg.get_valid():
