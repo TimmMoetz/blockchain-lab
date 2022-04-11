@@ -17,7 +17,8 @@ if __name__ == "__main__":
         node = P2PNode("127.0.0.1", port, port, max_connections=3)
         node.start_up()
 
-
+        if not os.path.exists('db/keys'):
+            os.mkdir("db/keys")
 
         if not os.path.exists('db/keys/private_key.pem') or not os.path.exists('db/keys/public_key.pem'):
             # generate keys
